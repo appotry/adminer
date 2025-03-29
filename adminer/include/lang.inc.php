@@ -62,8 +62,7 @@ function langs(): array {
 */
 function lang(string $idf, $number = null): string {
 	// this is matched by compile.php
-	global $translations;
-	$translation = ($translations[$idf] ?: $idf);
+	$translation = (idx(translations(), $idf) ?: $idf);
 	if (is_array($translation)) {
 		// this is matched by compile.php
 		$pos = ($number == 1 ? 0
