@@ -18,9 +18,8 @@ function add_quo_slashes($s) {
 }
 
 function remove_lang($match) {
-	global $translations;
 	$idf = strtr($match[2], array("\\'" => "'", "\\\\" => "\\"));
-	$s = ($translations[$idf] ?: $idf);
+	$s = (Adminer\idx(Adminer\translations(), $idf) ?: $idf);
 	if ($match[3] == ",") { // lang() has parameters
 		return $match[1] . (is_array($s) ? "lang(array('" . implode("', '", array_map('add_apo_slashes', $s)) . "')," : "sprintf('" . add_apo_slashes($s) . "',");
 	}
@@ -167,9 +166,9 @@ function put_file_lang($match) {
 	}
 	$return = "";
 	foreach (Adminer\langs() as $lang => $val) {
-		include __DIR__ . "/adminer/lang/$lang.inc.php"; // assign $translations
+		include __DIR__ . "/adminer/lang/$lang.inc.php"; // create translations()
 		$translation_ids = array_flip($lang_ids); // default translation
-		foreach ($translations as $key => $val) {
+		foreach (Adminer\translations() as $key => $val) {
 			if ($val !== null) {
 				$translation_ids[$lang_ids[$key]] = implode("\t", (array) $val);
 			}
