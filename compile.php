@@ -166,9 +166,10 @@ function put_file_lang($match) {
 	}
 	$return = "";
 	foreach (Adminer\langs() as $lang => $val) {
-		include __DIR__ . "/adminer/lang/$lang.inc.php"; // create translations()
+		$file = file_get_contents(__DIR__ . "/adminer/lang/$lang.inc.php");
+		$translations = eval(preg_replace('~.*\t(?=return)|\n}.*~s', '', $file));
 		$translation_ids = array_flip($lang_ids); // default translation
-		foreach (Adminer\translations() as $key => $val) {
+		foreach ($translations as $key => $val) {
 			if ($val !== null) {
 				$translation_ids[$lang_ids[$key]] = implode("\t", (array) $val);
 			}
@@ -177,10 +178,17 @@ function put_file_lang($match) {
 		case "' . $lang . '": $compressed = "' . add_quo_slashes(lzw_compress(implode("\n", $translation_ids))) . '"; break;';
 	}
 	$translations_version = crc32($return);
-	return '$translations = $_SESSION["translations"];
-if ($_SESSION["translations_version"] != ' . $translations_version . ') {
-	$translations = array();
-	$_SESSION["translations_version"] = ' . $translations_version . ';
+	return 'function translations() {
+	$translations = $_SESSION["translations"];
+	if ($_SESSION["translations_version"] != LANG . ' . $translations_version . ') {
+		$translations = array();
+		$_SESSION["translations_version"] = LANG . ' . $translations_version . ';
+	}
+	if (!$translations) {
+		$translations = get_translations(LANG);
+		$_SESSION["translations"] = $translations;
+	}
+	return $translations;
 }
 
 function get_translations($lang) {
@@ -191,11 +199,6 @@ function get_translations($lang) {
 		$translations[] = (strpos($val, "\t") ? explode("\t", $val) : $val);
 	}
 	return $translations;
-}
-
-if (!$translations) {
-	$translations = get_translations(LANG);
-	$_SESSION["translations"] = $translations;
 }
 ';
 }

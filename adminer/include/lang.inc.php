@@ -98,7 +98,6 @@ function switch_lang(): void {
 if (isset($_POST["lang"]) && verify_token()) { // $error not yet available
 	cookie("adminer_lang", $_POST["lang"]);
 	$_SESSION["lang"] = $_POST["lang"]; // cookies may be disabled
-	$_SESSION["translations"] = array(); // used in compiled version
 	redirect(remove_from_uri());
 }
 
